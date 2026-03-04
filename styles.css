@@ -316,6 +316,30 @@ button:active{
   color: var(--muted);
   font-size: 12px;
 }
+.btnRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.pin{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px 10px;
+  border-radius:14px;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  background: rgba(79, 70, 229, 0.10);
+  color: rgba(67, 56, 202, 0.95);
+  cursor:pointer;
+  font-weight: 900;
+  font-size: 12px;
+  user-select:none;
+}
+
+.pin:hover{
+  background: rgba(79, 70, 229, 0.14);
+}
 
 .dot{
   opacity: 0.55;

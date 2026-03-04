@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MyTrip Planner</title>
+  <!-- If you renamed your CSS file, keep this as styles.css -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -25,6 +26,7 @@
     </header>
 
     <section class="grid">
+      <!-- LEFT CARD: Add or Edit Trip -->
       <div class="card">
         <h2>Add Trip</h2>
 
@@ -49,13 +51,18 @@
         <textarea id="notes" placeholder="Hotel, budget, must see spots, packing list"></textarea>
 
         <div class="actions">
-          <button onclick="addTrip()">Add Trip</button>
+          <!-- IMPORTANT: saveTrip handles Add and Edit -->
+          <button id="primaryBtn" onclick="saveTrip()">Add Trip</button>
           <button class="secondary" onclick="clearForm()">Clear</button>
         </div>
+
+        <!-- Hidden field used to track when editing -->
+        <input type="hidden" id="editingId" value="">
 
         <div class="small">Trips are saved in your browser on this device.</div>
       </div>
 
+      <!-- RIGHT CARD: Search and List Trips -->
       <div class="card">
         <div class="cardTop">
           <div>
