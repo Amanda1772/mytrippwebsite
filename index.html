@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MyTrip Planner</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>MyTrip Planner</h1>
+
+<div class="container">
+
+<h2>Add Trip</h2>
+
+<input id="title" placeholder="Trip Title">
+<input id="location" placeholder="Location">
+<input id="startDate" type="date">
+<input id="endDate" type="date">
+<textarea id="notes" placeholder="Notes"></textarea>
+
+<button onclick="addTrip()">Add Trip</button>
+
+</div>
+
+<div class="container">
+
+<h2>Your Trips</h2>
+
+<input id="search" placeholder="Search trips..." onkeyup="searchTrips()">
+
+<ul id="tripList"></ul>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
