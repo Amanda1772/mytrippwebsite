@@ -5,23 +5,20 @@ import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
 import path from "path";
 
-// ---------- App + Config ----------
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "50kb" }));
 
 const PORT = Number(process.env.PORT || 8080);
 const NODE_ENV = process.env.NODE_ENV || "development";
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "*";
 const DATABASE_URL = process.env.DATABASE_URL || "./db.json";
 
-// Dev vs Prod CORS configuration
 app.use(
   cors({
     origin: CLIENT_ORIGIN === "*" ? true : CLIENT_ORIGIN
   })
 );
 
-// ---------- Database (JSON file) ----------
 const adapter = new JSONFile(path.resolve(DATABASE_URL));
 const db = new Low(adapter, { trips: [] });
 
@@ -38,7 +35,47 @@ async function initDb() {
   }
 }
 
-// ---------- Helpers ----------
+// Basic XSS prevention for stored text
+function sanitizeText(value, maxLen) {
+  const s = String(value ?? "").trim();
+  const clipped = s.length > maxLen ? s.slice(0, maxLen) : s;
+  return clipped.replaceAll("<", "").replaceAll(">", "");
+}
+
+function isIsoDate(d) {
+  if (!d) return true;
+  return /^\d{4}-\d{2}-\d{2}$/.test(d);
+}
+
+function validateTripBody(body, isUpdate = false) {
+  const errors = [];
+
+  if (!isUpdate) {
+    if (!body.id) errors.push("id is required");
+  }
+
+  if (!body.title || !String(body.title).trim()) errors.push("title is required");
+  if (!body.location || !String(body.location).trim()) errors.push("location is required");
+
+  const title = String(body.title || "");
+  const location = String(body.location || "");
+  const notes = String(body.notes || "");
+
+  if (title.length > 60) errors.push("title must be 60 characters or less");
+  if (location.length > 60) errors.push("location must be 60 characters or less");
+  if (notes.length > 500) errors.push("notes must be 500 characters or less");
+
+  const startDate = body.startDate || "";
+  const endDate = body.endDate || "";
+
+  if (!isIsoDate(startDate)) errors.push("startDate must be YYYY-MM-DD");
+  if (!isIsoDate(endDate)) errors.push("endDate must be YYYY-MM-DD");
+
+  if (startDate && endDate && startDate > endDate) errors.push("startDate must be before endDate");
+
+  return errors;
+}
+
 function sortTrips(trips) {
   return [...trips].sort((a, b) => {
     const ap = a.pinned ? 1 : 0;
@@ -48,19 +85,14 @@ function sortTrips(trips) {
   });
 }
 
-// ---------- Routes ----------
-
-// This fixes "Cannot GET /" by giving the root a real response
 app.get("/", (req, res) => {
   res.send("MyTrip API is running. Try /api/health or /api/trips");
 });
 
-// Health check endpoint for your assignment
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, env: NODE_ENV, port: PORT });
 });
 
-// Read all trips
 app.get("/api/trips", async (req, res, next) => {
   try {
     await db.read();
@@ -70,43 +102,46 @@ app.get("/api/trips", async (req, res, next) => {
   }
 });
 
-// Create a trip
 app.post("/api/trips", async (req, res, next) => {
   try {
-    const { id, title, location, startDate, endDate, notes, pinned, createdAt } = req.body || {};
-
-    if (!id || !title || !location) {
-      return res.status(400).json({ message: "Missing required fields: id, title, location" });
-    }
+    const errors = validateTripBody(req.body, false);
+    if (errors.length) return res.status(400).json({ message: "Validation failed", errors });
 
     await db.read();
+
+    const id = sanitizeText(req.body.id, 80);
     const exists = db.data.trips.some(t => t.id === id);
     if (exists) return res.status(409).json({ message: "Trip with that id already exists" });
 
-    db.data.trips.push({
+    const trip = {
       id,
-      title,
-      location,
-      startDate: startDate || "",
-      endDate: endDate || "",
-      notes: notes || "",
-      pinned: !!pinned,
-      createdAt: createdAt || Date.now()
-    });
+      title: sanitizeText(req.body.title, 60),
+      location: sanitizeText(req.body.location, 60),
+      startDate: sanitizeText(req.body.startDate || "", 10),
+      endDate: sanitizeText(req.body.endDate || "", 10),
+      notes: sanitizeText(req.body.notes || "", 500),
+      pinned: !!req.body.pinned,
+      createdAt: Number(req.body.createdAt || Date.now())
+    };
 
+    db.data.trips.push(trip);
     await db.write();
-    res.status(201).json({ ok: true });
+
+    res.status(201).json(trip);
   } catch (err) {
     next(err);
   }
 });
 
-// Update a trip
 app.put("/api/trips/:id", async (req, res, next) => {
   try {
-    const tripId = req.params.id;
+    const tripId = sanitizeText(req.params.id, 80);
+
+    const errors = validateTripBody({ ...req.body, id: tripId }, true);
+    if (errors.length) return res.status(400).json({ message: "Validation failed", errors });
 
     await db.read();
+
     const idx = db.data.trips.findIndex(t => t.id === tripId);
     if (idx === -1) return res.status(404).json({ message: "Trip not found" });
 
@@ -114,21 +149,24 @@ app.put("/api/trips/:id", async (req, res, next) => {
 
     db.data.trips[idx] = {
       ...current,
-      ...req.body,
-      id: tripId
+      title: sanitizeText(req.body.title, 60),
+      location: sanitizeText(req.body.location, 60),
+      startDate: sanitizeText(req.body.startDate || "", 10),
+      endDate: sanitizeText(req.body.endDate || "", 10),
+      notes: sanitizeText(req.body.notes || "", 500),
+      pinned: !!req.body.pinned
     };
 
     await db.write();
-    res.json({ ok: true });
+    res.json(db.data.trips[idx]);
   } catch (err) {
     next(err);
   }
 });
 
-// Delete a trip
 app.delete("/api/trips/:id", async (req, res, next) => {
   try {
-    const tripId = req.params.id;
+    const tripId = sanitizeText(req.params.id, 80);
 
     await db.read();
     const before = db.data.trips.length;
@@ -145,13 +183,11 @@ app.delete("/api/trips/:id", async (req, res, next) => {
   }
 });
 
-// Global error handler (required for credit)
 app.use((err, req, res, next) => {
   console.error("API Error:", err.message);
   res.status(500).json({ message: "Server error. Please try again." });
 });
 
-// ---------- Start ----------
 await initDb();
 
 app.listen(PORT, () => {
