@@ -1,41 +1,25 @@
-<!DOCTYPE html>
-
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>MyTrip Planner</title>
-<link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-<h1>MyTrip Planner</h1>
-
 <div class="container">
+  <h2>Add Trip</h2>
 
-<h2>Add Trip</h2>
+  <label for="title">Trip Title</label>
+  <input id="title" placeholder="Spring break getaway">
 
-<input id="title" placeholder="Trip Title">
-<input id="location" placeholder="Location">
-<input id="startDate" type="date">
-<input id="endDate" type="date">
-<textarea id="notes" placeholder="Notes"></textarea>
+  <label for="location">Location</label>
+  <input id="location" placeholder="Miami, FL">
 
-<button onclick="addTrip()">Add Trip</button>
+  <label for="startDate">Start Date</label>
+  <input id="startDate" type="date">
 
+  <label for="endDate">End Date</label>
+  <input id="endDate" type="date">
+
+  <label for="notes">Notes</label>
+  <textarea id="notes" placeholder="Hotel, budget, must see spots, packing list"></textarea>
+
+  <div class="actions">
+    <button onclick="addTrip()">Add Trip</button>
+    <button class="secondary" onclick="clearForm()">Clear</button>
+  </div>
+
+  <div class="small">Trips are saved in your browser on this device.</div>
 </div>
-
-<div class="container">
-
-<h2>Your Trips</h2>
-
-<input id="search" placeholder="Search trips..." onkeyup="searchTrips()">
-
-<ul id="tripList"></ul>
-
-</div>
-
-<script src="script.js"></script>
-
-</body>
-</html>
