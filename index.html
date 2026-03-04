@@ -1,25 +1,84 @@
-<div class="container">
-  <h2>Add Trip</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MyTrip Planner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-  <label for="title">Trip Title</label>
-  <input id="title" placeholder="Spring break getaway">
+<body>
+  <div class="shell">
+    <header class="hero">
+      <div class="brand">
+        <div class="logo">M</div>
+        <div>
+          <div class="brandName">MyTrip</div>
+          <div class="brandTag">Simple trip planning. Clean. Fast. Organized.</div>
+        </div>
+      </div>
 
-  <label for="location">Location</label>
-  <input id="location" placeholder="Miami, FL">
+      <div class="heroRight">
+        <div class="pill">Web Version</div>
+        <div class="pill pillSoft">CRUD Enabled</div>
+      </div>
+    </header>
 
-  <label for="startDate">Start Date</label>
-  <input id="startDate" type="date">
+    <section class="grid">
+      <div class="card">
+        <h2>Add Trip</h2>
 
-  <label for="endDate">End Date</label>
-  <input id="endDate" type="date">
+        <label for="title">Trip Title</label>
+        <input id="title" placeholder="Spring break getaway"/>
 
-  <label for="notes">Notes</label>
-  <textarea id="notes" placeholder="Hotel, budget, must see spots, packing list"></textarea>
+        <label for="location">Location</label>
+        <input id="location" placeholder="Miami, FL"/>
 
-  <div class="actions">
-    <button onclick="addTrip()">Add Trip</button>
-    <button class="secondary" onclick="clearForm()">Clear</button>
+        <div class="twoCol">
+          <div>
+            <label for="startDate">Start Date</label>
+            <input id="startDate" type="date"/>
+          </div>
+          <div>
+            <label for="endDate">End Date</label>
+            <input id="endDate" type="date"/>
+          </div>
+        </div>
+
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Hotel, budget, must see spots, packing list"></textarea>
+
+        <div class="actions">
+          <button onclick="addTrip()">Add Trip</button>
+          <button class="secondary" onclick="clearForm()">Clear</button>
+        </div>
+
+        <div class="small">Trips are saved in your browser on this device.</div>
+      </div>
+
+      <div class="card">
+        <div class="cardTop">
+          <div>
+            <h2>Your Trips</h2>
+            <div class="small">Search and manage your saved trips.</div>
+          </div>
+          <div class="count" id="countBadge">0</div>
+        </div>
+
+        <label for="search">Search</label>
+        <input id="search" placeholder="Search title, location, or notes" onkeyup="searchTrips()"/>
+
+        <ul id="tripList"></ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>MyTrip Planner • Web Edition</span>
+      <span class="dot">•</span>
+      <span>Designed for a clean, professional class demo</span>
+    </footer>
   </div>
 
-  <div class="small">Trips are saved in your browser on this device.</div>
-</div>
+  <script src="script.js"></script>
+</body>
+</html>

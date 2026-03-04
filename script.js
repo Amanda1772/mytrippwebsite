@@ -12,25 +12,32 @@ function clearForm(){
   document.getElementById("notes").value="";
 }
 
+function updateCount(n){
+  const el = document.getElementById("countBadge");
+  if (el) el.textContent = String(n);
+}
+
 function renderTrips(listToRender = trips){
   const list = document.getElementById("tripList");
   list.innerHTML="";
+
+  updateCount(listToRender.length);
 
   listToRender.forEach((trip,index)=>{
     const li = document.createElement("li");
     li.className = "tripCard";
 
-    const safeNotes = (trip.notes || "").trim();
+    const notes = (trip.notes || "").trim();
 
     li.innerHTML = `
       <div class="tripTop">
         <div>
-          <div class="tripTitle">${trip.title}</div>
-          <div class="tripMeta">${trip.location} • ${trip.startDate || ""} to ${trip.endDate || ""}</div>
+          <div class="tripTitle">${escapeHtml(trip.title)}</div>
+          <div class="tripMeta">${escapeHtml(trip.location)} • ${escapeHtml(trip.startDate || "")} to ${escapeHtml(trip.endDate || "")}</div>
         </div>
         <span class="delete" onclick="deleteTrip(${index})">Delete</span>
       </div>
-      ${safeNotes ? `<div class="tripNotes">${safeNotes}</div>` : ""}
+      ${notes ? `<div class="tripNotes">${escapeHtml(notes)}</div>` : ``}
     `;
 
     list.appendChild(li);
@@ -56,6 +63,9 @@ function addTrip(){
 }
 
 function deleteTrip(index){
+  const ok = confirm("Delete this trip?");
+  if (!ok) return;
+
   trips.splice(index,1);
   saveTrips();
   renderTrips();
@@ -76,6 +86,15 @@ function searchTrips(){
   );
 
   renderTrips(filtered);
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
 renderTrips();
